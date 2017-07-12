@@ -47,7 +47,8 @@ enum EnumGeometryId {
     GeoDataMultiTrackId,
     GeoDataModelId,
     GeoDataTrackId,
-    GeoDataBuildingId
+    GeoDataBuildingId,
+    GeoDataBuildingMemberId
 };
 
 }

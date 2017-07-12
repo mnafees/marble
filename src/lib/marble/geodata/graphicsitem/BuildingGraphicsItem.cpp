@@ -24,21 +24,24 @@
 
 #include <QScreen>
 #include <QApplication>
+#include <QDebug>
 
 namespace Marble
 {
 
-BuildingGraphicsItem::BuildingGraphicsItem(const GeoDataPlacemark *placemark, const GeoDataBuilding *building)
-    : AbstractGeoPolygonGraphicsItem(placemark, building)
+BuildingGraphicsItem::BuildingGraphicsItem(const GeoDataPlacemark *placemark, const GeoDataBuilding *building,
+                                           GeoDataBuildingMember* child)
+    : AbstractGeoPolygonGraphicsItem(placemark, building),
+      m_height(child->height())
 {
-    if (const auto ring = geodata_cast<GeoDataLinearRing>(&building->multiGeometry()->at(0))) {
+    if (const auto ring = geodata_cast<GeoDataLinearRing>(child->geometry())) {
         setLinearRing(ring);
-    } else if (const auto poly = geodata_cast<GeoDataPolygon>(&building->multiGeometry()->at(0))) {
+    } else if (const auto poly = geodata_cast<GeoDataPolygon>(child->geometry())) {
         setPolygon(poly);
     }
 
-    setZValue(building->height());
-    Q_ASSERT(building->height() > 0.0);
+    Q_ASSERT(m_height > 0.0);
+    setZValue(m_height);
 
     QStringList paintLayers;
     paintLayers << QStringLiteral("Polygon/Building/frame")
@@ -113,8 +116,8 @@ QPointF BuildingGraphicsItem::centroid(const QPolygonF &polygon, double &area)
 QPointF BuildingGraphicsItem::buildingOffset(const QPointF &point, const ViewportParams *viewport, bool* isCameraAboveBuilding) const
 {
     qreal const cameraFactor = 0.5 * tan(0.5 * 110 * DEG2RAD);
-    Q_ASSERT(building()->height() > 0.0);
-    qreal const buildingFactor = building()->height() / EARTH_RADIUS;
+    Q_ASSERT(m_height > 0.0);
+    qreal const buildingFactor = m_height / EARTH_RADIUS;
 
     qreal const cameraHeightPixel = viewport->width() * cameraFactor;
     qreal buildingHeightPixel = viewport->radius() * buildingFactor;
@@ -152,7 +155,7 @@ void BuildingGraphicsItem::paint(GeoPainter* painter, const ViewportParams* view
         }
         return;
     }
-    setZValue(building()->height());
+    setZValue(m_height);
 
     // For level 18, 19 .. render 3D buildings in perspective
     if (layer.endsWith(QLatin1String("/frame"))) {
@@ -311,7 +314,7 @@ void BuildingGraphicsItem::paintRoof(GeoPainter* painter, const ViewportParams* 
     }
 
     // Render additional housenumbers at building entries
-    if (!building()->entries().isEmpty() && maxArea > 1600 * building()->entries().size()) {
+    /*if (!building()->entries().isEmpty() && maxArea > 1600 * building()->entries().size()) {
         for(const auto &entry: building()->entries()) {
             qreal x, y;
             viewport->screenCoordinates(entry.point, x, y);
@@ -321,13 +324,13 @@ void BuildingGraphicsItem::paintRoof(GeoPainter* painter, const ViewportParams* 
                                      building()->name(), painter->font().pointSize(), painter->brush().color(),
                                      GeoPainter::RoundFrame);
         }
-    }
+    }*/
 }
 
 void BuildingGraphicsItem::paintFrame(GeoPainter *painter, const ViewportParams *viewport)
 {
     // TODO: how does this match the Q_ASSERT in the constructor?
-    if (building()->height() == 0.0) {
+    if (m_height == 0.0) {
         return;
     }
 

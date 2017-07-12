@@ -30,6 +30,7 @@ public:
     OsmPlacemarkData & osmData();
     void parseMember(const QXmlStreamAttributes &attributes);
     void addMember(qint64 reference, const QString &role, const QString &type);
+    void createBuilding(GeoDataDocument* document, OsmWays &ways, const OsmNodes &nodes, QSet<qint64> &usedNodes, QSet<qint64> &usedWays) const;
     void createMultipolygon(GeoDataDocument* document, OsmWays &ways, const OsmNodes &nodes, QSet<qint64> &usedNodes, QSet<qint64> &usedWays) const;
     void createRelation(GeoDataDocument* document, const QHash<qint64, GeoDataPlacemark*>& wayPlacemarks) const;
 
@@ -52,6 +53,8 @@ private:
 
     OsmPlacemarkData m_osmData;
     QVector<OsmMember> m_members;
+
+    qint64 fetchWayId(qint64 reference, const OsmWays &ways) const;
 };
 
 typedef QHash<qint64,OsmRelation> OsmRelations;

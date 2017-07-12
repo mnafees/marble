@@ -25,6 +25,7 @@
 #include "GeoDataMultiGeometry.h"
 #include "GeoDataPolygon.h"
 #include "GeoDataBuilding.h"
+#include "GeoDataBuildingMember.h"
 #include "GeoDataPolyStyle.h"
 #include "GeoDataStyle.h"
 #include "GeoDataIconStyle.h"
@@ -414,7 +415,19 @@ void GeometryLayerPrivate::createGraphicsItemFromGeometry(const GeoDataGeometry*
             item->setZValue(poly->renderOrder());
         }
     } else if (const auto building = geodata_cast<GeoDataBuilding>(object)) {
-        item = GeoPolygonGraphicsItem::createGraphicsItem(placemark, building);
+        for (int i = 0; i < building->multiGeometry()->size(); ++i) {
+            const auto buildingChild = geodata_cast<GeoDataBuildingMember>(&building->multiGeometry()->at(i));
+            if (!buildingChild) {
+                continue;
+            }
+            item = GeoPolygonGraphicsItem::createGraphicsItem(placemark, building, buildingChild);
+            item->setRelations(relations);
+            item->setStyleBuilder(m_styleBuilder);
+            item->setVisible(item->visible() && placemark->isGloballyVisible());
+            item->setMinZoomLevel(m_styleBuilder->minimumZoomLevel(*placemark));
+            m_scene.addItem(item);
+        }
+        return;
     } else if (const auto multigeo = geodata_cast<GeoDataMultiGeometry>(object)) {
         int rowCount = multigeo->size();
         for (int row = 0; row < rowCount; ++row) {

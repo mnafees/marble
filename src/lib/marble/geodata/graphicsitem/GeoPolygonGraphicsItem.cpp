@@ -14,6 +14,8 @@
 #include "GeoDataPlacemark.h"
 #include "StyleBuilder.h"
 
+#include <QDebug>
+
 namespace Marble
 {
 
@@ -27,9 +29,10 @@ AbstractGeoPolygonGraphicsItem *GeoPolygonGraphicsItem::createGraphicsItem(const
     return new GeoPolygonGraphicsItem(placemark, ring);
 }
 
-AbstractGeoPolygonGraphicsItem *GeoPolygonGraphicsItem::createGraphicsItem(const GeoDataPlacemark *placemark, const GeoDataBuilding *building)
+AbstractGeoPolygonGraphicsItem *GeoPolygonGraphicsItem::createGraphicsItem(const GeoDataPlacemark *placemark, const GeoDataBuilding *building,
+                                                                           GeoDataBuildingMember* child)
 {
-    return new BuildingGraphicsItem(placemark, building);
+    return new BuildingGraphicsItem(placemark, building, child);
 }
 
 GeoPolygonGraphicsItem::GeoPolygonGraphicsItem(const GeoDataPlacemark *placemark, const GeoDataPolygon *polygon) :

@@ -11,15 +11,18 @@
 #ifndef MARBLE_GEODATABUILDING_H
 #define MARBLE_GEODATABUILDING_H
 
+#include <QSet>
 #include <QVector>
 
 #include "GeoDataGeometry.h"
 #include "GeoDataCoordinates.h"
+#include "StyleBuilder.h"
 
 #include "geodata_export.h"
 
 namespace Marble {
 class GeoDataBuildingPrivate;
+class OsmPlacemarkData;
 
 /*!
     \class GeoDataBuilding
@@ -50,25 +53,21 @@ public:
 
     GeoDataGeometry *copy() const override;
 
+    static bool isBuilding(const OsmPlacemarkData& osmData);
+
     static double parseBuildingHeight(const QString& buildingHeight);
 
-    /*!
+    static QString extractName(const OsmPlacemarkData& osmData);
+
+    static double extractHeight(const OsmPlacemarkData& osmData);
+
+    static QVector<NamedEntry>& extractNamedEntries(const OsmPlacemarkData& osmData);
+
+
+/*!
     Destroys the GeoDataBuilding
 */
     ~GeoDataBuilding() override;
-
-
-/*!
-    @return the height of the building
-*/
-    double height() const;
-
-
-/*!
-    Sets the height of the building
-    @param height
- */
-    void setHeight(double height);
 
 
 /*!
@@ -111,12 +110,6 @@ public:
 
 
 /*!
-    @return the multigeometry associated with the building
- */
-    GeoDataMultiGeometry* multiGeometry() const;
-
-
-/*!
     @return the latlonaltbox for the contained multigeometry
  */
     const GeoDataLatLonAltBox& latLonAltBox() const override;
@@ -134,12 +127,22 @@ public:
  */
     void setName(const QString& name);
 
+
+/*!
+    Returns the multigeometry associated with the building
+ */
+    GeoDataMultiGeometry* multiGeometry() const;
+
     QVector<NamedEntry> entries() const;
 
     void setEntries(const QVector<NamedEntry>& entries);
 
 private:
     GeoDataBuildingPrivate* const d;
+
+    static QSet<StyleBuilder::OsmTag> s_buildingTags;
+
+    static bool isBuildingTag(const StyleBuilder::OsmTag &keyValue);
 };
 
 }

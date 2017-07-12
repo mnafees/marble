@@ -14,9 +14,11 @@
 #include <GeoDataRelation.h>
 #include <GeoDataDocument.h>
 #include <GeoDataPolygon.h>
+#include "GeoDataMultiGeometry.h"
 #include <GeoDataLatLonAltBox.h>
 #include <StyleBuilder.h>
 #include <osm/OsmObjectManager.h>
+#include <GeoDataBuildingMember.h>
 
 namespace Marble {
 
@@ -52,12 +54,65 @@ void OsmRelation::addMember(qint64 reference, const QString &role, const QString
     m_members << member;
 }
 
-void OsmRelation::createMultipolygon(GeoDataDocument *document, OsmWays &ways, const OsmNodes &nodes, QSet<qint64> &usedNodes, QSet<qint64> &usedWays) const
+void OsmRelation::createBuilding(GeoDataDocument* document, OsmWays &ways, const OsmNodes &nodes, QSet<qint64> &usedNodes, QSet<qint64> &usedWays) const
 {
-    if (!m_osmData.containsTag(QStringLiteral("type"), QStringLiteral("multipolygon"))) {
+    GeoDataBuilding building;
+
+    QSet<qint64> outlineWays;
+    QSet<qint64> outlineNodes;
+    OsmRings const outlines = rings(QStringList() << "outline", ways, nodes, outlineNodes, outlineWays);
+    for (auto outline: outlines) {
+        for (auto nodeId: outlineNodes) {
+            outline.second.addNodeReference(nodes[nodeId].coordinates(), nodes[nodeId].osmData());
+        }
+
+        GeoDataBuildingMember buildingChild;
+        buildingChild.setOsmData(outline.second);
+        buildingChild.setGeometry(outline.first.copy());
+
+        building.multiGeometry()->append(new GeoDataBuildingMember(buildingChild));
+    }
+
+    usedWays |= outlineWays;
+    usedNodes |= outlineNodes;
+
+    QSet<qint64> partWays;
+    QSet<qint64> partNodes;
+    OsmRings const parts = rings(QStringList() << "part", ways, nodes, partNodes, partWays);
+    for (auto part: parts) {
+        for (auto nodeId: partNodes) {
+            part.second.addNodeReference(nodes[nodeId].coordinates(), nodes[nodeId].osmData());
+        }
+        GeoDataBuildingMember buildingChild;
+        buildingChild.setOsmData(part.second);
+        buildingChild.setGeometry(part.first.copy());
+
+        building.multiGeometry()->append(new GeoDataBuildingMember(buildingChild));
+    }
+
+    usedWays |= partWays;
+    usedNodes |= partNodes;
+
+    if (building.multiGeometry()->size() == 0) {
         return;
     }
 
+    GeoDataPlacemark* placemark = new GeoDataPlacemark;
+    placemark->setGeometry(new GeoDataBuilding(building));
+    placemark->setName(building.name());
+    placemark->setOsmData(m_osmData);
+    placemark->setVisualCategory(GeoDataPlacemark::Building);
+    placemark->setZoomLevel(StyleBuilder::minimumZoomLevel(GeoDataPlacemark::Building));
+    placemark->setPopularity(StyleBuilder::popularity(placemark));
+    placemark->setVisible(true);
+
+    OsmObjectManager::initializeOsmData(placemark);
+
+    document->append(placemark);
+}
+
+void OsmRelation::createMultipolygon(GeoDataDocument *document, OsmWays &ways, const OsmNodes &nodes, QSet<qint64> &usedNodes, QSet<qint64> &usedWays) const
+{
     QStringList const outerRoles = QStringList() << QStringLiteral("outer") << QString();
     QSet<qint64> outerWays;
     QSet<qint64> outerNodes;
@@ -164,7 +219,8 @@ void OsmRelation::createMultipolygon(GeoDataDocument *document, OsmWays &ways, c
 
 void OsmRelation::createRelation(GeoDataDocument *document, const QHash<qint64, GeoDataPlacemark*>& placemarks) const
 {
-    if (m_osmData.containsTag(QStringLiteral("type"), QStringLiteral("multipolygon"))) {
+    if (m_osmData.containsTag(QStringLiteral("type"), QStringLiteral("multipolygon")) ||
+        m_osmData.containsTag(QStringLiteral("type"), QStringLiteral("building"))) {
         return;
     }
 

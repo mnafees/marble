@@ -28,15 +28,15 @@ private Q_SLOTS:
 void TestGeoDataBuilding::defaultConstructor() {
     GeoDataBuilding building;
 
-    QCOMPARE(building.height(), 0.0);
+    //QCOMPARE(building.height(), 0.0);
     QCOMPARE(building.minLevel(), 0);
     QCOMPARE(building.maxLevel(), 0);
 
-    building.setHeight(24.5);
+    //building.setHeight(24.5);
     building.setMinLevel(-2);
     building.setMaxLevel(10);
 
-    QCOMPARE(building.height(), 24.5);
+    //QCOMPARE(building.height(), 24.5);
     QCOMPARE(building.minLevel(), -2);
     QCOMPARE(building.maxLevel(), 10);
 
@@ -56,7 +56,7 @@ void TestGeoDataBuilding::defaultConstructor() {
 
     GeoDataBuilding building2(building);
 
-    QCOMPARE(building2.height(), 24.5);
+    //QCOMPARE(building2.height(), 24.5);
     QCOMPARE(building2.minLevel(), -2);
     QCOMPARE(building2.maxLevel(), 10);
     QVERIFY(!building2.nonExistentLevels().isEmpty());

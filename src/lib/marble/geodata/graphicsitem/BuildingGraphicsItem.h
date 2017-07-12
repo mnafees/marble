@@ -13,6 +13,9 @@
 
 #include "AbstractGeoPolygonGraphicsItem.h"
 #include "GeoDataCoordinates.h"
+#include "OsmPlacemarkData.h"
+#include "GeoDataGeometry.h"
+#include "GeoDataBuildingMember.h"
 
 class QPointF;
 
@@ -22,7 +25,8 @@ namespace Marble
 class MARBLE_EXPORT BuildingGraphicsItem : public AbstractGeoPolygonGraphicsItem
 {
 public:
-    BuildingGraphicsItem(const GeoDataPlacemark *placemark, const GeoDataBuilding *building);
+    BuildingGraphicsItem(const GeoDataPlacemark *placemark, const GeoDataBuilding *building,
+                         GeoDataBuildingMember* child);
     ~BuildingGraphicsItem() override;
 
 public:
@@ -56,7 +60,7 @@ private:
     QVector<QPolygonF*> m_cachedOuterRoofPolygons;
     QVector<QPolygonF*> m_cachedInnerRoofPolygons;
     bool m_hasInnerBoundaries;
-
+    double m_height;
 };
 
 }

@@ -93,6 +93,7 @@ const char GeoDataViewVolumeType[] = "GeoDataViewVolume";
 const char GeoDataNetworkLinkControlType[] = "GeoDataNetworkLinkControl";
 const char GeoDataUpdateType[] = "GeoDataUpdate";
 const char GeoDataBuildingType[] = "GeoDataBuilding";
+const char GeoDataBuildingMemberType[] = "GeoDataBuildingMember";
 }
 
 }

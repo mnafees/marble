@@ -20,8 +20,7 @@ class GeoDataBuildingPrivate : public GeoDataGeometryPrivate
 {
 public:
     GeoDataBuildingPrivate()
-        : m_height(0.0),
-          m_minLevel(0),
+        : m_minLevel(0),
           m_maxLevel(0)
     {
     }
@@ -33,7 +32,6 @@ public:
         return copy;
     }
 
-    double m_height;
     int m_minLevel;
     int m_maxLevel;
     QVector<int> m_nonExistentLevels;

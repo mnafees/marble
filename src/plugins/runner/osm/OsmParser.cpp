@@ -26,6 +26,9 @@
 #include <QFileInfo>
 #include <QBuffer>
 #include <QSet>
+#include <src/3rdparty/o5mreader/o5mreader.h>
+
+#include "QDebug"
 
 namespace Marble {
 
@@ -212,14 +215,19 @@ GeoDataDocument *OsmParser::createDocument(OsmNodes &nodes, OsmWays &ways, OsmRe
     backgroundStyle->setId(QStringLiteral("background"));
     document->addStyle( backgroundStyle );
 
-    QSet<qint64> usedNodes, usedWays;
+    QSet<qint64> usedBuildingNodes, usedBuildingWays, usedMultipolygonNodes, usedMultipolygonWays;
     for(auto const &relation: relations) {
-        relation.createMultipolygon(document, ways, nodes, usedNodes, usedWays);
+        if (relation.osmData().containsTag(QStringLiteral("type"), QStringLiteral("building"))) {
+            relation.createBuilding(document, ways, nodes, usedBuildingNodes, usedBuildingWays);
+        } else if (relation.osmData().containsTag(QStringLiteral("type"), QStringLiteral("multipolygon"))) {
+            relation.createMultipolygon(document, ways, nodes, usedMultipolygonNodes, usedMultipolygonWays);
+        }
     }
-    for(auto id: usedWays) {
+    for(auto id: usedBuildingWays.unite(usedMultipolygonWays)) {
         ways.remove(id);
     }
 
+    QSet<qint64> usedNodes = usedBuildingNodes.unite(usedMultipolygonNodes);
     QHash<qint64, GeoDataPlacemark*> placemarks;
     for (auto iter=ways.constBegin(), end=ways.constEnd(); iter != end; ++iter) {
         auto placemark = iter.value().create(nodes, usedNodes);

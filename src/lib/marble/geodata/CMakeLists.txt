@@ -77,6 +77,7 @@ SET ( geodata_data_SRCS
         geodata/data/GeoDataSchemaData.cpp
         geodata/data/GeoDataSimpleData.cpp
         geodata/data/GeoDataBuilding.cpp
+        geodata/data/GeoDataBuildingMember.cpp
 )
 
 SET ( geodata_scene_SRCS

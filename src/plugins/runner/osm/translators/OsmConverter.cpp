@@ -24,6 +24,7 @@
 #include "GeoDataRelation.h"
 #include "GeoDataLinearRing.h"
 #include "GeoDataBuilding.h"
+#include "GeoDataBuildingMember.h"
 #include "GeoDataMultiGeometry.h"
 #include "osm/OsmPlacemarkData.h"
 #include "osm/OsmObjectManager.h"
@@ -59,10 +60,14 @@ void OsmConverter::read(const GeoDataDocument *document)
             } else if (const auto polygon = geodata_cast<GeoDataPolygon>(placemark->geometry())) {
                 processPolygon(polygon, osmData, placemark);
             } else if (const auto building = geodata_cast<GeoDataBuilding>(placemark->geometry())) {
-                if (const auto linearRing = geodata_cast<GeoDataLinearRing>(&building->multiGeometry()->at(0))) {
-                    processLinearRing(linearRing, osmData);
-                } else if (const auto polygon = geodata_cast<GeoDataPolygon>(&building->multiGeometry()->at(0))) {
-                    processPolygon(polygon, osmData, placemark);
+                for (int i = 0; i < building->multiGeometry()->size(); ++i) {
+                    if (const auto child = geodata_cast<GeoDataBuildingMember>(&building->multiGeometry()->at(i))) {
+                        if (const auto ring = geodata_cast<GeoDataLinearRing>(child->geometry())) {
+                            processLinearRing(ring, child->osmData());
+                        } else if (const auto polygon = geodata_cast<GeoDataPolygon>(child->geometry())) {
+                            processPolygon(polygon, child->osmData(), placemark);
+                        }
+                    }
                 }
             }
         } else if (const auto placemark = geodata_cast<GeoDataRelation>(feature)) {

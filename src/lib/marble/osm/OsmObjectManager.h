@@ -17,7 +17,11 @@
 namespace Marble
 {
 
+class GeoDataGeometry;
 class GeoDataPlacemark;
+class GeoDataLinearRing;
+class GeoDataPolygon;
+class OsmPlacemarkData;
 
 /**
  * @brief The OsmObjectManager class is used to assign osmData to placemarks that
@@ -46,6 +50,12 @@ private:
      * minId - 1 id.
      */
     static qint64 m_minId;
+
+    static void processGeometry(OsmPlacemarkData osmData, GeoDataGeometry* geometry);
+
+    static void processLinearRing(const OsmPlacemarkData& osmData, GeoDataLinearRing* linearRing);
+
+    static void processPolygon(OsmPlacemarkData& osmData, GeoDataPolygon* polygon);
 };
 
 }
