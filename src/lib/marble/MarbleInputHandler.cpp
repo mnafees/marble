@@ -941,10 +941,12 @@ bool MarbleDefaultInputHandler::handleKeyPress(QKeyEvent* event)
             marblePresenter->moveByStep(0, 1);
             break;
         case Qt::Key_Plus:
-            marblePresenter->zoomIn();
+            if (!marblePresenter->map()->debugLevelTags())
+                marblePresenter->zoomIn();
             break;
         case Qt::Key_Minus:
-            marblePresenter->zoomOut();
+            if (!marblePresenter->map()->debugLevelTags())
+                marblePresenter->zoomOut();
             break;
         case Qt::Key_Home:
             marblePresenter->goHome();

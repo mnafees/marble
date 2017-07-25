@@ -110,6 +110,8 @@ public:
     GeoDataLatLonBox m_cachedLatLonBox;
     QSet<qint64> m_highlightedRouteRelations;
     GeoDataRelation::RelationTypes m_visibleRelationTypes;
+    bool m_levelTagsDebugModeEnabled;
+    int m_levelToDebug;
 };
 
 GeometryLayerPrivate::GeometryLayerPrivate(const QAbstractItemModel *model, const StyleBuilder *styleBuilder) :
@@ -119,7 +121,9 @@ GeometryLayerPrivate::GeometryLayerPrivate(const QAbstractItemModel *model, cons
     m_lastFeatureAt(nullptr),
     m_dirty(true),
     m_cachedItemCount(0),
-    m_visibleRelationTypes(GeoDataRelation::RouteFerry)
+    m_visibleRelationTypes(GeoDataRelation::RouteFerry),
+    m_levelTagsDebugModeEnabled(false),
+    m_levelToDebug(0)
 {
 }
 
@@ -248,6 +252,17 @@ bool GeometryLayer::render(GeoPainter *painter, ViewportParams *viewport,
         AbstractGeoPolygonGraphicsItem::s_previousStyle = 0;
         GeoLineStringGraphicsItem::s_previousStyle = 0;
         for (auto item: layerItems) {
+            if (const auto placemark = geodata_cast<GeoDataPlacemark>(item->feature())) {
+                if (d->m_levelTagsDebugModeEnabled && placemark->hasOsmData()) {
+                    if (placemark->osmData().containsTagKey(QStringLiteral("level"))) {
+                        QHash<QString, QString>::const_iterator tagIter = placemark->osmData().findTag(QStringLiteral("level"));
+                        const int val = tagIter.value().toInt();
+                        if (val != d->m_levelToDebug) {
+                            continue;
+                        }
+                    }
+                }
+            }
             item->paint(painter, viewport, layer, d->m_tileLevel);
         }
     }
@@ -665,6 +680,32 @@ void GeometryLayer::handleHighlight(qreal lon, qreal lat, GeoDataCoordinates::Un
     }
 
     emit highlightedPlacemarksChanged(selectedPlacemarks);
+}
+
+void GeometryLayer::setLevelTagsDebugModeEnabled(bool enabled)
+{
+    if (d->m_levelTagsDebugModeEnabled != enabled) {
+        d->m_levelTagsDebugModeEnabled = enabled;
+        d->m_levelToDebug = 0;
+    }
+}
+
+bool GeometryLayer::isLevelTagsDebugModeEnabled() const
+{
+    return d->m_levelTagsDebugModeEnabled;
+}
+
+void GeometryLayer::setLevelToDebug(int level)
+{
+    if (d->m_levelToDebug != level) {
+        d->m_levelToDebug = level;
+        emit repaintNeeded();
+    }
+}
+
+int GeometryLayer::levelToDebug() const
+{
+    return d->m_levelToDebug;
 }
 
 }

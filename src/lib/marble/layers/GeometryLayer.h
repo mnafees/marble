@@ -58,6 +58,14 @@ public:
 
     void setVisibleRelationTypes(GeoDataRelation::RelationTypes relationTypes);
 
+    void setLevelTagsDebugModeEnabled(bool enabled);
+
+    bool isLevelTagsDebugModeEnabled() const;
+
+    void setLevelToDebug(int level);
+
+    int levelToDebug() const;
+
 public Q_SLOTS:
     void addPlacemarks( const QModelIndex& index, int first, int last );
     void removePlacemarks( const QModelIndex& index, int first, int last );
