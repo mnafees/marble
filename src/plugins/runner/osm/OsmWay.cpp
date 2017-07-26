@@ -83,7 +83,9 @@ GeoDataPlacemark *OsmWay::create(const OsmNodes &nodes, QSet<qint64> &usedNodes)
 
     GeoDataPlacemark *placemark = new GeoDataPlacemark;
     placemark->setGeometry(geometry);
-    placemark->setVisualCategory(StyleBuilder::determineVisualCategory(m_osmData));
+    if (!isBuilding()) {
+        placemark->setVisualCategory(StyleBuilder::determineVisualCategory(m_osmData));
+    }
     placemark->setName(m_osmData.tagValue(QStringLiteral("name")));
     if (placemark->name().isEmpty()) {
         placemark->setName(m_osmData.tagValue(QStringLiteral("ref")));
